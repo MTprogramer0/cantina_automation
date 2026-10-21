@@ -1,0 +1,8 @@
+# Dependências
+node_modules/
+
+# Variáveis de ambiente locais (COM A SENHA)
+.env
+
+# Banco de dados local antigo (caso tenha ficado algum resquício)
+*.db
