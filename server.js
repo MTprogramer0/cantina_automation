@@ -11,6 +11,10 @@ app.use(express.json());
 // Serve os arquivos estáticos do frontend da pasta public
 app.use(express.static(path.join(__dirname, "public")));
 
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
 // O Node vai buscar a URL de forma segura no ambiente onde estiver rodando
 const MONGO_URI =
   process.env.MONGO_URI ||
