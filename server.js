@@ -8,23 +8,15 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Serve os arquivos estáticos do frontend da pasta public
+// Serve os arquivos estáticos do frontend da pasta public (já trata da página inicial)
 app.use(express.static(path.join(__dirname, "public")));
-
-app.get("/*", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
-});
 
 // O Node vai buscar a URL de forma segura no ambiente onde estiver rodando
 const MONGO_URI =
   process.env.MONGO_URI ||
   "mongodb+srv://usuario:senha@cluster0.xxxxx.mongodb.net/merenda_db?retryWrites=true&w=majority";
 
-mongoose
-  .connect(MONGO_URI)
-  .then(() => console.log("Conectado ao MongoDB Atlas com sucesso!"))
-  .catch((err) => console.error("Erro ao conectar ao MongoDB:", err));
-
+// Conexão única com o MongoDB
 mongoose
   .connect(MONGO_URI)
   .then(() => console.log("Conectado ao MongoDB Atlas com sucesso!"))
