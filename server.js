@@ -37,7 +37,10 @@ merendaSchema.index({ turma: 1, data: 1 }, { unique: true });
 const Merenda = mongoose.model("Merenda", merendaSchema);
 
 function getDataHoje() {
-  return new Date().toISOString().split("T")[0];
+  // Retorna a data atual no fuso horário do Brasil no formato 'YYYY-MM-DD'
+  return new Date().toLocaleDateString("en-CA", {
+    timeZone: "America/Sao_Paulo",
+  });
 }
 
 // Rotas da API
