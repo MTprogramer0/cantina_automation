@@ -23,7 +23,6 @@ const USUARIO = "cantina";
 const SENHA = "1234";
 const MARGEM = 0.1;
 
-// Os números ficam somente na memória da página.
 let dados = {};
 let tela = "home";
 let turma = null;
@@ -50,7 +49,6 @@ function ir(t) {
 
 function aviso() {
   if (!msg) return "";
-
   return (
     '<p class="' +
     (msg.startsWith("ok") ? "msg" : "err") +
@@ -67,9 +65,7 @@ function escolher(i) {
 
 function loginSala() {
   const u = document.getElementById("u").value.trim().toLowerCase();
-
   const p = document.getElementById("p").value;
-
   const t = TURMAS.find(function (x) {
     return x.nome === turma;
   });
@@ -82,7 +78,21 @@ function loginSala() {
   }
 }
 
-function enviar() {
+// BUSCAR DADOS DO SERVIDOR (MONGODB)
+async function carregarDados() {
+  try {
+    const res = await fetch("/api/merenda");
+    if (res.ok) {
+      dados = await res.json();
+      render();
+    }
+  } catch (e) {
+    console.error("Erro ao carregar dados do servidor", e);
+  }
+}
+
+// ENVIAR DADOS PARA O SERVIDOR
+async function enviar() {
   const q = parseInt(document.getElementById("q").value, 10);
 
   if (isNaN(q) || q < 0 || q > 100) {
@@ -90,9 +100,22 @@ function enviar() {
     return render();
   }
 
-  dados[turma] = q;
+  try {
+    const res = await fetch("/api/merenda", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ turma, quantidade: q }),
+    });
 
-  msg = "ok:Enviado! A cantina recebeu o número da turma " + turma + ".";
+    if (res.ok) {
+      dados[turma] = q;
+      msg = "ok:Enviado! A cantina recebeu o número da turma " + turma + ".";
+    } else {
+      msg = "err:Erro ao salvar no servidor.";
+    }
+  } catch (e) {
+    msg = "err:Falha de conexão com o servidor.";
+  }
 
   render();
 }
@@ -120,12 +143,31 @@ function cancelarReset() {
   render();
 }
 
-function resetarTudo() {
-  dados = {};
-  confirmando = false;
-  msg = "ok:Todas as informações foram apagadas.";
+// RESETAR DADOS NO SERVIDOR
+async function resetarTudo() {
+  try {
+    const res = await fetch("/api/merenda", { method: "DELETE" });
+    if (res.ok) {
+      dados = {};
+      confirmando = false;
+      msg = "ok:Todas as informações foram apagadas.";
+    } else {
+      msg = "err:Erro ao apagar registros do servidor.";
+    }
+  } catch (e) {
+    msg = "err:Falha de conexão com o servidor.";
+  }
   render();
 }
+
+// Atualiza dados automaticamente ao entrar na tela de turmas ou da cantina
+const irOriginal = ir;
+ir = function (t) {
+  if (t === "turmas" || t === "cantina") {
+    carregarDados();
+  }
+  irOriginal(t);
+};
 
 const voltar =
   '<button class="sec" onclick="ir(\'home\')">' + "← Voltar</button>";
@@ -151,7 +193,6 @@ function render() {
       '</p><div class="grid">' +
       TURMAS.map(function (t, i) {
         const ok = dados[t.nome] != null;
-
         return (
           '<button class="' +
           (ok ? "done" : "") +
@@ -273,4 +314,4 @@ function render() {
   app.innerHTML = h;
 }
 
-render();
+carregarDados();
