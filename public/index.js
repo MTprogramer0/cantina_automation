@@ -315,3 +315,10 @@ function render() {
 }
 
 carregarDados();
+
+// Atualiza o painel da cantina automaticamente a cada 5 segundos
+setInterval(function () {
+  if (tela === "cantina" && logado) {
+    carregarDados();
+  }
+}, 5000);
